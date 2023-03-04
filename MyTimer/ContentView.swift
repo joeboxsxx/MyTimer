@@ -8,6 +8,11 @@
 import SwiftUI
 
 struct ContentView: View {
+    @State var timerHandler : Timer?
+    
+    @State var count = 0
+    
+    @AppStorage("timer_value") var timerValue = 10
     var body: some View {
         NavigationStack {
             
@@ -18,12 +23,12 @@ struct ContentView: View {
                     .scaledToFill()
                 
                 VStack(spacing: 30.0) {
-                    Text("残り10秒")
+                    Text("残り\(timerValue - count)秒")
                         .font(.largeTitle)
                     
                     HStack {
                         Button {
-                            
+                            startTimer()
                         } label: {
                             Text("スタート")
                                 .font(.title)
@@ -34,7 +39,11 @@ struct ContentView: View {
                         }
                         
                         Button {
-                            
+                            if let unwrapedHanler = timerHandler {
+                                if unwrapedHanler.isValid == true {
+                                    unwrapedHanler.invalidate()
+                                }
+                            }
                         } label: {
                             Text("ストップ")
                                 .font(.title)
@@ -47,6 +56,10 @@ struct ContentView: View {
                 }
             }
             
+            .onAppear {
+                count = 0
+            }
+            
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     NavigationLink {
@@ -56,6 +69,30 @@ struct ContentView: View {
                     }
                 }
             }
+        }
+    }
+    
+    func countDownTimer() {
+        count += 1
+        
+        if timerValue - count <= 0 {
+            timerHandler?.invalidate()
+        }
+    }
+    
+    func startTimer() {
+        if let unwrapedTimerhandler = timerHandler {
+            if unwrapedTimerhandler.isValid == true {
+                return
+            }
+        }
+        
+        if timerValue - count <= 0 {
+            count = 0
+        }
+        
+        timerHandler = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
+            countDownTimer()
         }
     }
 }
